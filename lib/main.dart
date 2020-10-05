@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
-import 'file:///C:/Users/Android/FlutterProjectAsistencia/flutter_covid_asistencia/lib/src/pages/home/home_page.dart';
+import 'package:flutter_covid_asistencia/src/bloc/provider.dart';
+import 'package:flutter_covid_asistencia/src/pages/home/home_page.dart';
+import 'package:flutter_covid_asistencia/src/pages/login_page.dart';
 import 'package:flutter_covid_asistencia/src/routes/routes.dart';
+import 'package:flutter_covid_asistencia/src/shared_prefs/preferencias_usuario.dart';
 
-void main() => runApp(MyApp());
+//void main() => runApp(MyApp());
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = PreferenciasUsuario();
+  await prefs.initPrefs();
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
+  final prefs = PreferenciasUsuario();
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Asistencia Covid',
-      initialRoute: "login",
-      routes: getRoutesMaterial(),
-      onGenerateRoute: (RouteSettings settings){
-        return MaterialPageRoute(builder: (BuildContext context) => HomePage());
-      },
-      debugShowCheckedModeBanner: false,
+    return Provider(
+      child: MaterialApp(
+        title: 'Asistencia Covid',
+        debugShowCheckedModeBanner: false,
+        initialRoute: prefs.token.toString().isEmpty ? "login" : "home",
+        routes: getRoutesMaterial(),
+        onGenerateRoute: (RouteSettings settings){
+          return MaterialPageRoute(builder: (BuildContext context) => HomePage());
+        },
+      ),
     );
   }
 }

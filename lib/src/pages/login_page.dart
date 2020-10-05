@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_covid_asistencia/src/bloc/login_bloc.dart';
+import 'package:flutter_covid_asistencia/src/bloc/provider.dart';
 import 'package:flutter_covid_asistencia/src/dialogs/progress_dialog.dart';
+import 'package:flutter_covid_asistencia/src/models/usuario_model.dart';
+import 'package:flutter_covid_asistencia/src/shared_prefs/preferencias_usuario.dart';
 import 'package:flutter_covid_asistencia/src/utils/utils.dart';
 
 class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final _prefs = new PreferenciasUsuario();
+    //print(_prefs.token);
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -69,6 +76,7 @@ class LoginPage extends StatelessWidget {
   }
 
   Widget _crearLoginForm( BuildContext context ){
+    final bloc = Provider.of(context).loginBloc;
     final size = MediaQuery.of(context).size;
     return SafeArea(
       child: SingleChildScrollView(
@@ -95,11 +103,11 @@ class LoginPage extends StatelessWidget {
                 children: <Widget>[
                   Text("INGRESAR DNI", style: TextStyle(fontSize: 20)),
                   SizedBox(height: 60.0),
-                  _userTextField(),
+                  _userTextField(bloc),
                   SizedBox(height: 30.0),
-                  _passwordTextField(),
+                  _passwordTextField(bloc),
                   SizedBox(height: 30.0),
-                  _crearBotonIngresar(context),
+                  _crearBotonIngresar(bloc),
                 ],
               ),
             ),
@@ -110,63 +118,83 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _userTextField() {
-    return Container(
-      padding: EdgeInsets.symmetric( horizontal: 20),
-      child: TextField(
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          icon: Icon(Icons.account_circle, color: Colors.deepOrange,),
-          hintText: "Usuario",
-          labelText: "Ingresar DNI",
-          //counterText:
+  Widget _userTextField(LoginBloc bloc) {
+    return StreamBuilder(
+      stream: bloc.usuarioStream,
+      builder: (context, snapshot){
+      return Container(
+        padding: EdgeInsets.symmetric( horizontal: 20),
+        child: TextField(
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            icon: Icon(Icons.account_circle, color: Colors.deepOrange,),
+            hintText: "Usuario",
+            labelText: "Ingresar DNI",
+            counterText: snapshot.data,
+            errorText: snapshot.error
+          ),
+          onChanged: bloc.changeUsuario,
         ),
-      ),
-    );
-  }
-
-  Widget _passwordTextField() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: TextField(
-        obscureText: true,
-        decoration: InputDecoration(
-          icon: Icon(Icons.lock, color: Colors.deepOrangeAccent,),
-          labelText: "Contraseña",
-          //counterText
-        ),
-      ),
-    );
-  }
-
-  Widget _crearBotonIngresar(BuildContext context){
-    return RaisedButton(
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 80,vertical: 15),
-        child: Text("INGRESAR"),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0)
-      ),
-      color: Colors.red,
-      textColor: Colors.white,
-      onPressed: (){
-        _login(context);
+        );
       },
     );
   }
 
-  void _login( BuildContext context ) async{
+  Widget _passwordTextField(LoginBloc bloc) {
+    return StreamBuilder(
+      stream: bloc.claveStream,
+      builder: (context, snapshot){
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: TextField(
+            obscureText: true,
+            decoration: InputDecoration(
+              icon: Icon(Icons.lock, color: Colors.deepOrangeAccent,),
+              labelText: "Contraseña",
+              counterText: snapshot.data,
+              errorText: snapshot.error
+            ),
+            onChanged: bloc.changeClave,
+          ),
+        );
+      }
+    );
+  }
+
+  Widget _crearBotonIngresar(LoginBloc bloc){
+    return StreamBuilder<bool>(
+      stream: bloc.formValidStream,
+      builder: (context, snapshot){
+        return RaisedButton(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 80,vertical: 15),
+            child: Text("INGRESAR"),
+          ),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0)
+          ),
+          color: Colors.red,
+          textColor: Colors.white,
+          onPressed: snapshot.hasData ? () => _login(bloc, context) : null
+        );
+      },
+    );
+  }
+
+  void _login(LoginBloc bloc ,BuildContext context ) async{
     ProgressDialog _progressDialog = new ProgressDialog(context);
-    _progressDialog.show();
+    Usuario usuario = new Usuario();
+    //_progressDialog.show();
     //Código de validación LOGUEO
-    _progressDialog.hide();
+    Map info = await bloc.loginUsuario();
+    //_progressDialog.hide();
     //Verificación del LOGUEO
-    if ( true ){
-      Navigator.pushReplacementNamed(context, "home");
+    if ( info['ok'] ){
+      usuario.nombreCompleto = info['nombreCompleto'];
+      usuario.cui = int.parse(info['cui']);
+      Navigator.pushReplacementNamed(context, "home", arguments: usuario);
     } else {
-      //showAlertDialog(context, info['message']);
-      print("Algo salio mal");
+      showAlertDialog(context, info['message']);
     }
   }
 }
