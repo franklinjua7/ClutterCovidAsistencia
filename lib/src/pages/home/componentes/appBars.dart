@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_covid_asistencia/src/models/usuario_model.dart';
 import 'package:flutter_covid_asistencia/src/utils/colors.dart';
 import 'package:gradient_app_bar/gradient_app_bar.dart';
 
-Widget fullAppbar(BuildContext context) {
+Widget fullAppbar(BuildContext context, Usuario usuario) {
   return PreferredSize(
     preferredSize: Size.fromHeight(210.0),
     child: GradientAppBar(
@@ -24,7 +25,7 @@ Widget fullAppbar(BuildContext context) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Bienvenida Gaby',
+              'Bienvenido ${usuario.nombreCompleto}',
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
             ),
             Text(

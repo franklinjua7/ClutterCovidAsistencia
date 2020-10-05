@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
     print('CUI');
     print(usuario.cui);
     return Scaffold(
-      appBar: fullAppbar(context),
+      appBar: fullAppbar(context, usuario),
       body:  usuario.cui % 2==0 ?_llamarPaginasPaciente(_currentIndex) : _llamarPaginasDoctor(_currentIndex),
       bottomNavigationBar: usuario.cui % 2==0 ? _crearBottomNavigatorBarPaciente(): _crearBottomNavigatorBarDoctor(),
     );

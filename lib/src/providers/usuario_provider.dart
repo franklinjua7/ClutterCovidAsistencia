@@ -14,22 +14,21 @@ class UsuarioProvider{
 
   Future<Map<String, dynamic>> loginUsuario(String usuario, String clave) async{
     String urlDni = _urlBase+usuario;
-    //try{
       final ioc = new HttpClient();
       ioc.badCertificateCallback = ((X509Certificate cert, String host, int port) => true);
       final http = new IOClient(ioc);
       final response = await http.post(urlDni,body:{});
-      print("Reponse status : ${response.statusCode}");
-      print("Response body : ${response.body}");
+      //print("Reponse status : ${response.statusCode}");
+      //print("Response body : ${response.body}");
       var responseBody = jsonDecode(response.body);
-      print("responseBody");
-      print(responseBody);
+      //print("responseBody");
+      //print(responseBody);
       if ( responseBody != null ){
         String nombreCompleto = responseBody["apellido_paterno"]+' '+responseBody["apellido_materno"]+' '+responseBody["nombres"];
         String cui = responseBody["cui"].toString();
         return {'ok':true, 'cui':cui, 'nombreCompleto':nombreCompleto};
       } else {
-        print("False");
+        //print("False");
         return {'ok':false , 'message': 'El DNI ingresado no existe'};
       }
   }
