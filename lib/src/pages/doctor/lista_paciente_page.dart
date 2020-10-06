@@ -40,7 +40,7 @@ class ListaPacientePage extends StatelessWidget {
               if( snapshot.hasData ){
                 print('SNAPSHOT');
                 print(snapshot.data);
-                return _listaVertical(pacientes: snapshot.data);
+                return _listaVertical( context ,pacientes: snapshot.data);
               } else {
                 return Center(child: CircularProgressIndicator(),);
               }
@@ -51,28 +51,33 @@ class ListaPacientePage extends StatelessWidget {
     );
   }
 
-  Widget _listaVertical( {List<Paciente> pacientes}) {
-    return Container(
+  Widget _listaVertical( BuildContext context, {List<Paciente> pacientes}) {
+    Paciente pacienteUnico = new Paciente();
+    final tarjetaPaciente = Container(
       height: 200,
       child: PageView.builder(
           pageSnapping: false,
           controller: PageController(
               viewportFraction: 0.32,
-              initialPage: 1
+              initialPage: 0
           ),
           itemCount: pacientes.length,
           itemBuilder: (context, index){
             print("Pacientes");
             print(pacientes[index].name);
+            pacienteUnico = pacientes[index];
             return Column(
               children: <Widget>[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: FadeInImage(
-                    image: NetworkImage(pacientes[index].getProfilePath()),
-                    placeholder: AssetImage("images/no-image.jpg"),
-                    height: 150.0,
-                    fit: BoxFit.contain,
+                Hero(
+                  tag: pacientes[index].id,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: FadeInImage(
+                      image: NetworkImage(pacientes[index].getProfilePath()),
+                      placeholder: AssetImage("images/no-image.jpg"),
+                      height: 150.0,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
                 Text( pacientes[index].name ),
@@ -80,6 +85,13 @@ class ListaPacientePage extends StatelessWidget {
             );
           }
       ),
+    );
+
+    return GestureDetector(
+      onTap: (){
+        Navigator.pushNamed(context, "detalle_paciente", arguments: pacienteUnico);
+      },
+      child: tarjetaPaciente,
     );
   }
 }
